@@ -1,0 +1,17 @@
+{
+  "profile_name": "config_2_balanced",
+  "profile_description": "โหมด balanced: สมดุลระหว่างความถี่เทรดและความเสี่ยง เหมาะใช้งานประจำ",
+  "runtime": {
+    "trade_check_interval_seconds": 40
+  },
+  "sensitivity": {
+    "level": 2
+  },
+  "risk": {
+    "max_open_trades": 3,
+    "max_risk_usd": 100.0
+  },
+  "market_filters": {
+    "max_spread_points": 200
+  }
+}

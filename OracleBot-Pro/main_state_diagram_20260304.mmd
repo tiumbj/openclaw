@@ -1,0 +1,104 @@
+stateDiagram-v2
+    [*] --> SessionStart
+
+    state SessionStart {
+        [*] --> ConfigUltraAggressive
+        ConfigUltraAggressive: config.json from config_4\n20s interval, sensitivity=3\nmax_open_trades=5, risk_usd=200
+        ConfigUltraAggressive --> NoTrades_3h
+    }
+
+    NoTrades_3h: No orders for ~3 hours\n(despite ultra-aggressive profile)
+    NoTrades_3h --> InvestigateConfluence: Analyze MTF confluence & thresholds
+
+    InvestigateConfluence: Inspect advanced_trade_decision,\nMTF confluence, thresholds
+    InvestigateConfluence --> Config_TunedConfluence: Add mtf & confluence_thresholds\nto config.json
+
+    Config_TunedConfluence: mtf.min_timeframes_required=1\nlowered confluence thresholds
+    Config_TunedConfluence --> NoMarketData: Logs show \"Skip TF no market data\"\n(0 bars on all TFs)
+
+    NoMarketData: get_market_data returns 0 bars\nfor M5/M15/M30/H1
+    NoMarketData --> FixSymbol: Set runtime.default_symbol=XAUUSDm\nand restart trading script
+
+    FixSymbol: Primary symbol now XAUUSDm
+    FixSymbol --> SpreadFilterBlocking: Logs show\n\"Spread too high: 396 > 260\"
+
+    SpreadFilterBlocking: Spread filter blocks all cycles\n(max_spread_points=260)
+    SpreadFilterBlocking --> RaiseSpreadLimit: Increase max_spread_points to 400\nfor ultra-aggressive config
+
+    RaiseSpreadLimit: Spread no longer main blocker
+    RaiseSpreadLimit --> ConfluenceBlocking: MTF debug shows scores below thresholds\nor TF misalignment (H1 SELL vs M5 BUY)
+
+    ConfluenceBlocking: MTF confluence sometimes below threshold\nor H1 misaligned
+    ConfluenceBlocking --> FirstAdvancedSignal: MTF score passes threshold\nAdvanced Signal generated & logged
+
+    FirstAdvancedSignal: Signal passes filters\nRiskFirewall + Gatekeeper APPROVED
+    FirstAdvancedSignal --> TradeContextBusy: mt5.order_send returns retcode 10016\n(TRade context busy)
+
+    TradeContextBusy: ORDER READY Telegram sent\nbut trade execution fails with 10016
+    TradeContextBusy --> AddRetryAndNotify: Implement retry loop on 10016\n+ Telegram ORDER FAILED on final failure
+
+    AddRetryAndNotify: New behavior active\nfuture 10016 will be retried & reported
+    AddRetryAndNotify --> InvalidStopsInsight
+
+    InvalidStopsInsight: Re-interpret 10016/10011 as Invalid Stops\n(bad SL/TP vs broker rules)
+    InvalidStopsInsight --> SLTPValidationUpdate: Add stops_level & digits checks\nin execute_advanced_trade
+
+    SLTPValidationUpdate: SL/TP min distance respects stops_level\n+ prices rounded to symbol digits
+    SLTPValidationUpdate --> SpreadAwareSLTP: Add spread-aware guard\nmin SL >= spread * factor\n+ SL min ~300 pts by TF
+
+    SpreadAwareSLTP: sl_tp_spread_factor in config.json\nTIMEFRAME_RISK_PROFILE widened (M5 300–600 pts)
+    SpreadAwareSLTP --> MarginRejected: RiskFirewall rejects trades\nInsufficient Free Margin
+
+    MarginRejected: Required margin > Free margin\n(after earlier loss series)
+    MarginRejected --> DepositFunds: User deposits more funds\nbalance/equity restored ~10k+
+
+    DepositFunds --> SLClusterUltraAggressive: Ultra-aggressive config_4 still active\nmultiple large SELLs hit SL
+
+    SLClusterUltraAggressive: Series of losses ~ -10k\nlot sizes 16.66 / 11.11 / 3.7 / 3.36
+    SLClusterUltraAggressive --> SwitchToBalancedConfig: Replace config.json with config_2_balanced
+
+    SwitchToBalancedConfig: Balanced mode\ncheck_interval=40s\nmax_open_trades=3, risk_usd=100, sensitivity=2
+    SwitchToBalancedConfig --> SpreadGuardActive
+
+    SpreadGuardActive: market_filters.max_spread_points=400\nsl_tp_spread_factor=1.5
+    SpreadGuardActive --> DeepSLTPAudit
+
+    DeepSLTPAudit: Deep analysis found root cause\nSL/TP too close from ATR unit/timeframe mismatch\n+ missing hard SL floor vs noise/spread
+    DeepSLTPAudit --> UnifiedSLTPSafeguards
+
+    UnifiedSLTPSafeguards: Single-pass hardening in execute_advanced_trade\nadd hard min/max points, noise+spread floor,\nATR guard floor, TP minimum ratio,\npost-rounding SL/TP distance re-validation
+    UnifiedSLTPSafeguards --> BrokerSymbolCompatibility
+
+    BrokerSymbolCompatibility: Robust symbol resolution for broker changes\nsupport XAUUSD / GOLD / XAUUSDm\n+ runtime symbol_aliases + MarketWatch auto-select/fallback
+    BrokerSymbolCompatibility --> RestartAfterPatch
+
+    RestartAfterPatch: Restart live_trading_advanced.py\nMT5 connected + startup notification sent
+    RestartAfterPatch --> ConfluenceWaitState
+
+    ConfluenceWaitState: System healthy but no entry yet\ncurrent MTF score ~25.7 < thresholds 30/35/41/45\nso bot skips by confluence filter (expected behavior)
+
+    ConfluenceWaitState --> March06_TimezoneBug
+
+    March06_TimezoneBug: 2026-03-06 observed runtime issues\nGatekeeper candle time error (int64)\nnaive vs aware datetime comparison
+    March06_TimezoneBug --> March06_AddTimeUtils
+
+    March06_AddTimeUtils: Add core/time_utils.py\nMT5 Server (EET/EEST) -> UTC -> Asia/Bangkok\nsupports datetime/ISO/epoch seconds
+    March06_AddTimeUtils --> March06_GatekeeperTimezoneAware
+
+    March06_GatekeeperTimezoneAware: Gatekeeper uses MT5 tick.time as current_time\nstores tz-aware Bangkok times\nprevents clock skew + naive/aware mismatch
+    March06_GatekeeperTimezoneAware --> March06_DirectionBiasInvestigation
+
+    March06_DirectionBiasInvestigation: Deep analysis: visual bounce vs MTF bias\npullback inside down-structure can trigger repeated SELL\nneed safer countertrend protection
+    March06_DirectionBiasInvestigation --> March06_CountertrendStreakGuard
+
+    March06_CountertrendStreakGuard: Add execution_filters.countertrend_streak_guard\nblock SELL on consecutive bullish candles\nreduce SELL stacking during bounce
+    March06_CountertrendStreakGuard --> March06_PrimaryM15Alignment
+
+    March06_PrimaryM15Alignment: Enforce primary timeframe alignment\nmtf.primary_timeframe=M15\nrequire M15 aligned score before accepting signal
+    March06_PrimaryM15Alignment --> March06_M15StructureGate
+
+    March06_M15StructureGate: Safety mode: M15 HH/HL approves flip\nEMA only warning\nif M15 structure NEUTRAL then no trade
+    March06_M15StructureGate --> March06_VerifiedRuntime
+
+    March06_VerifiedRuntime: Verified via logs\nSkip not aligned with primary M15\nSkip blocked by M15 HH/HL gate (NEUTRAL)
+    March06_VerifiedRuntime --> [*]
