@@ -1,25 +1,46 @@
-# Version: 1.1
+# OracleBot-Pro
+# Version: v1.1.0
 
 # Python cache
 __pycache__/
-*.pyc
+*.py[cod]
+*.pyo
 
-# tool caches
-.pytest_cache/
+# Tool cache
 .mypy_cache/
+.pytest_cache/
 .ruff_cache/
 
-# virtual environment
+# Virtual environment
 .venv/
 venv/
+env/
 
-# environment secrets
+# Secrets
 .env
-.env.bak
+.env.*
+!.env.example
 
-# logs
+# Logs
 *.log
 
-# OS files
-Thumbs.db
+# Images / generated charts
+*.png
+*.jpg
+*.jpeg
+*.webp
+
+# Generated datasets / reports
+*.csv
+performance_snapshot_*.json
+
+# OS / editor
 .DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Test / temp artifacts
+htmlcov/
+.coverage
+.coverage.*
