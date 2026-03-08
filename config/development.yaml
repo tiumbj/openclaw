@@ -1,0 +1,56 @@
+# Development Configuration - OracleBot Pro
+# Environment: development
+
+# MT5 Connection Settings (Demo Account)
+mt5:
+  server: "MetaQuotes-Demo"
+  login: ${MT5_LOGIN:123456}
+  password: ${MT5_PASSWORD:demo_password}
+  timeout: 30
+  max_retries: 3
+  heartbeat_interval: 60
+
+# Trading Parameters (Conservative for Dev)
+trading:
+  default_symbol: "XAUUSD"
+  max_position_size: 0.01  # Smaller size for testing
+  max_daily_trades: 5
+  risk_per_trade: 0.01  # 1% for development
+  slippage: 5.0
+
+# OpenClaw AI Integration
+openclaw:
+  enabled: false  # Will be enabled after installation
+  api_url: "http://localhost:8000"
+  timeout: 60
+  retry_attempts: 2
+
+# Telegram Notifications (Optional in Dev)
+telegram:
+  enabled: false
+  bot_token: ${TELEGRAM_BOT_TOKEN:}
+  chat_id: ${TELEGRAM_CHAT_ID:}
+  alert_level: "ERROR"  # Only errors in dev
+
+# Monitoring & Logging (Verbose for Development)
+monitoring:
+  log_level: "DEBUG"
+  metrics_enabled: true
+  health_check_interval: 120
+
+# Resilience Settings (More tolerant in Dev)
+resilience:
+  circuit_breaker_threshold: 10
+  retry_backoff_factor: 1.5
+  max_retry_delay: 30
+
+# Strategy Configuration (Development Settings)
+strategies:
+  xauusd:
+    enabled: true
+    timeframe: "H1"  # Longer timeframe for stability
+    indicators:
+      rsi_period: 14
+      macd_fast: 12
+      macd_slow: 26
+      macd_signal: 9

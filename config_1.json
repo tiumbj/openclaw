@@ -1,0 +1,17 @@
+{
+  "profile_name": "config_1_conservative",
+  "profile_description": "โหมด conservative สำหรับเริ่มต้น: เทรดไม่ถี่ เน้นรักษาทุน drawdown ต่ำ",
+  "runtime": {
+    "trade_check_interval_seconds": 60
+  },
+  "sensitivity": {
+    "level": 1
+  },
+  "risk": {
+    "max_open_trades": 2,
+    "max_risk_usd": 50.0
+  },
+  "market_filters": {
+    "max_spread_points": 180
+  }
+}

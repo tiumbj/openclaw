@@ -1,0 +1,17 @@
+{
+  "profile_name": "config_3_aggressive",
+  "profile_description": "โหมด aggressive: เทรดถี่ขึ้น รับความเสี่ยงสูงขึ้น เหมาะกับการทดสอบบน demo",
+  "runtime": {
+    "trade_check_interval_seconds": 30
+  },
+  "sensitivity": {
+    "level": 3
+  },
+  "risk": {
+    "max_open_trades": 4,
+    "max_risk_usd": 150.0
+  },
+  "market_filters": {
+    "max_spread_points": 230
+  }
+}

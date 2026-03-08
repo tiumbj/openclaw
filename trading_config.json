@@ -1,0 +1,80 @@
+{
+  "runtime": {
+    "default_symbol": "XAUUSD",
+    "trade_check_interval_seconds": 30,
+    "enable_signal_csv_log": true
+  },
+  "sensitivity": {
+    "level": 2,
+    "min_distance_points": { "min": 20, "base": 50, "per_level_delta": 10 },
+    "gatekeeper_cooldown_seconds": { "min": 60, "base": 120, "per_level_delta": 30 },
+    "gatekeeper_atr_multiplier": { "min": 1.2, "base": 1.6, "per_level_delta": 0.15 },
+    "gatekeeper_min_points": { "min": 80.0, "base": 120.0, "per_level_delta": 20.0 },
+    "confluence_threshold_delta_per_level": 4.0
+  },
+  "mtf": {
+    "scan_timeframes": ["M15", "M30", "H1"],
+    "weights": { "M15": 0.35, "M30": 0.3, "H1": 0.35 },
+    "primary_timeframe": "M15",
+    "require_primary_alignment": true,
+    "structure_gate": {
+      "enabled": true,
+      "timeframe": "M15",
+      "bars": 180,
+      "pivot_lookback": 1,
+      "bypass_for_mean_reversion": true
+    },
+    "min_timeframes_required": 2
+  },
+  "market_filters": {
+    "max_spread_points": 200
+  },
+  "execution_filters": {
+    "one_trade_per_candle": true,
+    "momentum_candle_guard": true,
+    "momentum_candle_atr_ratio": 0.55,
+    "countertrend_streak_guard": true,
+    "countertrend_streak_bars": 3,
+    "min_bars_between_trades_by_timeframe": { "M15": 2, "M30": 1, "H1": 1 }
+  },
+  "risk": {
+    "max_open_trades": 4,
+    "max_risk_usd": 200.0
+  },
+  "sl_tp": {
+    "timeframe_profiles": {
+      "M5": { "sl_atr_multiplier": 0.75, "rr_ratio": 1.4, "sl_min_points": 30.0, "sl_max_points": 120.0 },
+      "M15": { "sl_atr_multiplier": 1.1, "rr_ratio": 1.8, "sl_min_points": 50.0, "sl_max_points": 240.0 },
+      "M30": { "sl_atr_multiplier": 1.25, "rr_ratio": 2.0, "sl_min_points": 80.0, "sl_max_points": 260.0 },
+      "H1": { "sl_atr_multiplier": 1.5, "rr_ratio": 2.2, "sl_min_points": 110.0, "sl_max_points": 360.0 }
+    },
+    "confirmation_adjustments": {
+      "structure_sl_atr_multiplier_factor": 1.05,
+      "structure_rr_ratio": 1.9,
+      "ema_sl_atr_multiplier_factor": 1.15,
+      "ema_rr_ratio": 1.35
+    }
+  },
+  "confluence_thresholds": {
+    "base_by_timeframe": { "M5": 34.0, "M15": 40.0, "M30": 46.0, "H1": 50.0 },
+    "default": 42.0,
+    "regime_adjustments": { "VOLATILE_CHAOS": -5.0, "LIQUIDITY_CRISIS": -5.0, "QUIET": 3.0 },
+    "min": 30.0,
+    "max": 58.0
+  },
+  "telegram": {
+    "enabled": true,
+    "startup_notify": true,
+    "order_notify": true,
+    "timeout_seconds": 10
+  },
+  "help": {
+    "sensitivity.level": "0-3: ยิ่งสูงยิ่งเข้าเงื่อนไขง่ายขึ้นและเทรดถี่ขึ้น แต่เสี่ยงโดน noise มากขึ้น",
+    "runtime.trade_check_interval_seconds": "ยิ่งน้อยยิ่งเช็คบ่อย/ถี่ขึ้น แต่เสี่ยงยิงถี่ในช่วงตลาดสวิงและโหลดระบบมากขึ้น",
+    "market_filters.max_spread_points": "สเปรดสูง = ค่าเข้าแพง/โดนไส้เทียนง่าย ถ้าต่ำเกินไปอาจพลาดโอกาส",
+    "mtf.min_timeframes_required": "ขั้นต่ำของ TF ที่ต้องมีข้อมูลสำหรับคำนวณ confluence ถ้าสูงขึ้นจะปลอดภัยขึ้นแต่เทรดน้อยลง",
+    "risk.max_risk_usd": "ความเสี่ยงเป็น USD ต่อ 1 ออเดอร์ ยิ่งสูง PnL แกว่งสูงขึ้น",
+    "risk.max_open_trades": "จำกัดจำนวนออเดอร์ค้าง ยิ่งสูงยิ่งเพิ่ม exposure และความเสี่ยงรวมหากตลาดวิ่งสวน",
+    "sl_tp.timeframe_profiles": "SL/TP ตาม TF: TF เล็ก SL/TP เล็ก (ไว/โดน stop ง่าย), TF ใหญ่ SL/TP ใหญ่ (นิ่งกว่าแต่ถือยาวขึ้น)"
+  }
+}

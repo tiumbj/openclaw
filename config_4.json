@@ -1,0 +1,17 @@
+{
+  "profile_name": "config_4_ultra_aggressive",
+  "profile_description": "โหมด ultra-aggressive: ยิงถี่มาก เสี่ยงสูงมาก ใช้สำหรับ forward test/demo เท่านั้น",
+  "runtime": {
+    "trade_check_interval_seconds": 20
+  },
+  "sensitivity": {
+    "level": 3
+  },
+  "risk": {
+    "max_open_trades": 5,
+    "max_risk_usd": 200.0
+  },
+  "market_filters": {
+    "max_spread_points": 260
+  }
+}
